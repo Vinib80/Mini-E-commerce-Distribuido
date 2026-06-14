@@ -1,4 +1,6 @@
 fastapi
 uvicorn
-passlib[bcrypt]
 pydantic
+passlib[bcrypt]
+PyJWT
+python-dotenv

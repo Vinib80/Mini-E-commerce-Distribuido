@@ -51,7 +51,7 @@ def login_user(user: UserLogin):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    cursor.execute('SELECT id, password_hash FROM users WHERE email = ?', (user.email,))
+    cursor.execute('SELECT id, password_hash, role FROM users WHERE email = ?', (user.email,))
     row = cursor.fetchone()
     conn.close()
     
@@ -61,7 +61,7 @@ def login_user(user: UserLogin):
             detail="Credenciais inválidas"
         )
         
-    access_token = create_access_token(data={"sub": str(row[0])})
+    access_token = create_access_token(data={"sub": str(row[0]), "role": row[2]})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/users/{user_id}", response_model=UserResponse)
