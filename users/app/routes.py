@@ -1,10 +1,11 @@
 import sqlite3
 # pyrefly: ignore [missing-import]
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 # pyrefly: ignore [missing-import]
 from passlib.context import CryptContext
-from .schemas import UserCreate, UserResponse
+from .schemas import UserCreate, UserResponse, UserLogin, Token
 from .database import get_db_connection
+from .auth import create_access_token, verify_token
 
 router = APIRouter()
 
@@ -44,6 +45,42 @@ def register_user(user: UserCreate):
         )
     finally:
         conn.close()
+
+@router.post("/users/login", response_model=Token)
+def login_user(user: UserLogin):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute('SELECT id, password_hash FROM users WHERE email = ?', (user.email,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if not row or not pwd_context.verify(user.password, row[1]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciais inválidas"
+        )
+        
+    access_token = create_access_token(data={"sub": str(row[0])})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/users/{user_id}", response_model=UserResponse)
+def get_user(user_id: int, payload: dict = Depends(verify_token)):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, name, email, role FROM users WHERE id = ?', (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
+        
+    return UserResponse(
+        id=row[0],
+        name=row[1],
+        email=row[2],
+        role=row[3]
+    )
 
 @router.get("/health")
 def health_check():
