@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from .database import init_db
