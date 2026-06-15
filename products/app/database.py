@@ -1,6 +1,8 @@
 import sqlite3
+import os
 
-DB_FILE = "products.db"
+PORT = os.getenv("PORT", "5002")
+DB_FILE = os.getenv("DB_FILE", f"products_{PORT}.db")
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
