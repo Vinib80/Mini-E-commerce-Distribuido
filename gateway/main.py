@@ -123,6 +123,40 @@ async def delete_product(product_id: int, request: Request):
     resp = await forward_request("DELETE", primary_url, headers=headers)
     return Response(content=resp.content, status_code=resp.status_code, headers=dict(resp.headers))
 
+@app.post("/users/register")
+async def register_user(request: Request, payload: dict):
+    resp = await forward_request("POST", f"{SERVICES_URLS[0]}/users/register", json=payload)
+    return JSONResponse(status_code=resp.status_code, content=resp.json() if resp.content else None)
+
+@app.post("/users/login")
+async def login_user(request: Request, payload: dict):
+    resp = await forward_request("POST", f"{SERVICES_URLS[0]}/users/login", json=payload)
+    return JSONResponse(status_code=resp.status_code, content=resp.json() if resp.content else None)
+
+@app.get("/users/{user_id}")
+async def get_user(user_id: int, request: Request, token: str = Depends(security)):
+    headers = {}
+    if "authorization" in request.headers:
+        headers["authorization"] = request.headers["authorization"]
+    resp = await forward_request("GET", f"{SERVICES_URLS[0]}/users/{user_id}", headers=headers)
+    return Response(content=resp.content, status_code=resp.status_code, headers=dict(resp.headers))
+
+@app.post("/orders")
+async def create_order(request: Request, payload: dict, token: str = Depends(security)):
+    headers = {}
+    if "authorization" in request.headers:
+        headers["authorization"] = request.headers["authorization"]
+    resp = await forward_request("POST", f"{SERVICES_URLS[3]}/orders", headers=headers, json=payload)
+    return JSONResponse(status_code=resp.status_code, content=resp.json() if resp.content else None)
+
+@app.get("/orders/{user_id}")
+async def get_user_orders(user_id: int, request: Request, token: str = Depends(security)):
+    headers = {}
+    if "authorization" in request.headers:
+        headers["authorization"] = request.headers["authorization"]
+    resp = await forward_request("GET", f"{SERVICES_URLS[3]}/orders/{user_id}", headers=headers)
+    return Response(content=resp.content, status_code=resp.status_code, headers=dict(resp.headers))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)

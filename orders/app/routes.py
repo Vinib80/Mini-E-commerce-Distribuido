@@ -8,7 +8,7 @@ from .auth import verify_token
 router = APIRouter()
 
 @router.post("/orders", status_code=status.HTTP_201_CREATED, response_model=OrderResponse)
-def create_order(order: OrderCreate):
+def create_order(order: OrderCreate, payload: dict = Depends(verify_token)):
     conn = get_db_connection()
     cursor = conn.cursor()
     

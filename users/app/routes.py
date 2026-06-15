@@ -61,7 +61,7 @@ def login_user(user: UserLogin):
             detail="Credenciais inválidas"
         )
         
-    access_token = create_access_token(data={"sub": str(row[0]), "role": row[2]})
+    access_token = create_access_token(data={"userId": row[0], "email": user.email, "role": row[2]})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/users/{user_id}", response_model=UserResponse)
